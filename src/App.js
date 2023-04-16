@@ -24,15 +24,11 @@ export default function App() {
 
   useEffect(() => {
     if (state.matches("lengthSpecified.advancedOnce.running")) {
-      const interval = setInterval(() => {
-        setCurrentTime(new Date());
+      const tick = setInterval(() => setCurrentTime(new Date()), 1000);
 
-        if (remainingTime() <= 0) {
-          send("EXPIRED");
-        }
-      }, 1000);
-
-      return () => clearInterval(interval);
+      return () => {
+        clearInterval(tick);
+      };
     }
   }, [
     lastTime,
@@ -55,73 +51,74 @@ export default function App() {
     }
   }
 
-  return (
-    <form className="main-form vstack gap-50">
-      {e("h1", {}, "How Long is This Queue?")}
-      {e("label", { htmlFor: "startTime" }, "When did you join the queue?")}
-      {e("input", {
-        readOnly: true,
-        id: "startTime",
-        className: "form-control text-center",
-        value: startTime.toLocaleTimeString(undefined, {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      })}
-      {e(
-        "label",
-        { htmlFor: "queueLength" },
-        "How many queuers are ahead of you?"
-      )}
-      {e("input", {
-        id: "queueLength",
-        className: "form-control text-center",
-        value: queueLength,
-        onChange: (e) => {
-          send("SPECIFY_LENGTH");
-          setQueueLength(e.target.value);
-        },
-      })}
-      {state.matches("lengthSpecified") && (
-        <Fragment>
-          {e(
-            "button",
-            {
-              type: "button",
-              className: "form-control btn btn-success",
-              onClick: advanceQueue,
-            },
-            "Advance"
-          )}
-          {state.matches("lengthSpecified.advancedOnce") && (
-            <Fragment>
-              {e("label", { htmlFor: "queuersProcessed" }, "Queuers processed")}
-              {/* <input
-                readOnly
-                id="queuersProcessed"
-                className="form-control text-center"
-                value={queuersProcessed}
-              /> */}
-              <label htmlFor="remainingTime">Time remaining</label>
-              <input
-                readOnly
-                id="remainingTime"
-                className="form-control text-center"
-                value={
-                  {
-                    running: remainingTime().toLocaleTimeString(undefined, {
-                      minute: "2-digit",
-                      second: "2-digit",
-                    }),
-                    expiredEarly: "We might have been a tad optimistic!",
-                  }[state.value.lengthSpecified.advancedOnce] ||
-                  console.log(state.value)
-                }
-              />
-            </Fragment>
-          )}
-        </Fragment>
-      )}
-    </form>
+  return e(
+    "form",
+    { className: "main-form vstack gap-50" },
+    e("h1", {}, "How Long is This Queue?"),
+    e("label", { htmlFor: "startTime" }, "When did you join the queue?"),
+    e("input", {
+      readOnly: true,
+      id: "startTime",
+      className: "form-control text-center",
+      value: startTime.toLocaleTimeString(undefined, {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    }),
+    e(
+      "label",
+      { htmlFor: "queueLength" },
+      "How many queuers are ahead of you?"
+    ),
+    e("input", {
+      id: "queueLength",
+      className: "form-control text-center",
+      value: state.matches("lengthSpecified") ? queueLength : "",
+      onChange: (e) => {
+        send("SPECIFY_LENGTH");
+        setQueueLength(e.target.value);
+      },
+    }),
+    state.matches("lengthSpecified") &&
+      e(
+        Fragment,
+        null,
+        e(
+          "button",
+          {
+            type: "button",
+            className: "form-control btn btn-success",
+            onClick: advanceQueue,
+          },
+          "Advance"
+        ),
+        state.matches("lengthSpecified.advancedOnce") &&
+          e(
+            Fragment,
+            null,
+            e("label", { htmlFor: "queuersProcessed" }, "Queuers processed"),
+            e("input", {
+              readOnly: true,
+              id: "queuersProcessed",
+              className: "form-control text-center",
+              value: queuersProcessed,
+            }),
+            e("label", { htmlFor: "remainingTime" }, "Time remaining"),
+            e("input", {
+              readOnly: true,
+              id: "remainingTime",
+              className: "form-control text-center",
+              value:
+                {
+                  running: remainingTime().toLocaleTimeString(undefined, {
+                    minute: "2-digit",
+                    second: "2-digit",
+                  }),
+                  expiredEarly: "We might have been a tad optimistic!",
+                }[state.value.lengthSpecified.advancedOnce] ||
+                console.log(state.value),
+            })
+          )
+      )
   );
 }

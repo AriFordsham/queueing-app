@@ -1,0 +1,14 @@
+html, body {
+  height: 100%;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  padding-top: 40px;
+}
+
+.main-form {
+  width: 100%;
+  max-width: 500px;
+}
