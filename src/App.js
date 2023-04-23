@@ -2,65 +2,40 @@ import React, { Fragment, useCallback, useEffect, useState } from "react";
 
 import { useMachine } from "@xstate-ninja/react";
 
-import { queueMachine } from "./stateMachine";
+import { queueMachine, remainingTime } from "./stateMachine";
 
 export default function App() {
   const e = React.createElement;
 
-  const [startTime, ,] = useState(new Date());
-  const [lastTime, setLastTime] = useState(new Date());
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const [queueLength, setQueueLength] = useState(0);
-  const [queuersProcessed, setQueuersProcessed] = useState(0);
+  const [, setCurrentTime] = useState(new Date());
 
   const [state, send] = useMachine(queueMachine, { devTools: true });
 
-  const remainingTime = useCallback(() => {
-    const waitTime = new Date((lastTime - startTime) / queuersProcessed);
-    return new Date(
-      waitTime * queueLength + (waitTime - (currentTime - lastTime))
-    );
-  }, [currentTime, lastTime, queueLength, queuersProcessed, startTime]);
+  const remainingTime_ = useCallback(
+    () => remainingTime(state.context),
+    [state.context]
+  );
 
   useEffect(() => {
     if (state.matches("lengthSpecified.advancedOnce.running")) {
       const tick = setInterval(() => setCurrentTime(new Date()), 1000);
 
-      return () => {
-        clearInterval(tick);
-      };
+      return () => clearInterval(tick);
     }
-  }, [
-    lastTime,
-    startTime,
-    queuersProcessed,
-    queueLength,
-    currentTime,
-    remainingTime,
-    send,
-    state,
-  ]);
+  }, [state]);
 
-  function advanceQueue() {
-    send("ADVANCE");
-
-    if (queueLength > 0) {
-      setLastTime(new Date());
-      setQueueLength(queueLength - 1);
-      setQueuersProcessed(queuersProcessed + 1);
-    }
-  }
+  const advance = useCallback(() => send("ADVANCE"), [send]);
 
   return e(
     "form",
-    { className: "main-form vstack gap-50" },
+    { className: "main-form" },
     e("h1", {}, "How Long is This Queue?"),
     e("label", { htmlFor: "startTime" }, "When did you join the queue?"),
     e("input", {
       readOnly: true,
       id: "startTime",
       className: "form-control text-center",
-      value: startTime.toLocaleTimeString(undefined, {
+      value: state.context.startTime.toLocaleTimeString(undefined, {
         hour: "2-digit",
         minute: "2-digit",
       }),
@@ -73,11 +48,11 @@ export default function App() {
     e("input", {
       id: "queueLength",
       className: "form-control text-center",
-      value: state.matches("lengthSpecified") ? queueLength : "",
-      onChange: (e) => {
-        send("SPECIFY_LENGTH");
-        setQueueLength(e.target.value);
-      },
+      value: state.matches("lengthSpecified")
+        ? state.context.queueLength - state.context.queuersProcessed
+        : "",
+      onChange: (e) =>
+        send("SPECIFY_LENGTH", { specifiedLength: e.target.value }),
     }),
     state.matches("lengthSpecified") &&
       e(
@@ -88,7 +63,7 @@ export default function App() {
           {
             type: "button",
             className: "form-control btn btn-success",
-            onClick: advanceQueue,
+            onClick: advance,
           },
           "Advance"
         ),
@@ -101,7 +76,7 @@ export default function App() {
               readOnly: true,
               id: "queuersProcessed",
               className: "form-control text-center",
-              value: queuersProcessed,
+              value: state.context.queuersProcessed,
             }),
             e("label", { htmlFor: "remainingTime" }, "Time remaining"),
             e("input", {
@@ -110,7 +85,7 @@ export default function App() {
               className: "form-control text-center",
               value:
                 {
-                  running: remainingTime().toLocaleTimeString(undefined, {
+                  running: remainingTime_().toLocaleTimeString(undefined, {
                     minute: "2-digit",
                     second: "2-digit",
                   }),
