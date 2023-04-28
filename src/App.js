@@ -2,7 +2,9 @@ import React, { Fragment, useCallback, useEffect, useState } from "react";
 
 import { useMachine } from "@xstate-ninja/react";
 
-import { queueMachine, remainingTime } from "./stateMachine";
+import { queueMachine } from "./stateMachine";
+
+import { remainingTime } from "./timings.ts";
 
 export default function App() {
   const e = React.createElement;
@@ -12,7 +14,7 @@ export default function App() {
   const [state, send] = useMachine(queueMachine, { devTools: true });
 
   const remainingTime_ = useCallback(
-    () => remainingTime(state.context),
+    () => remainingTime(state.context, new Date()),
     [state.context]
   );
 

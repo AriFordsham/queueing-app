@@ -1,5 +1,7 @@
 import { assign, createMachine } from "xstate";
 
+import { remainingTime } from "./timings.ts";
+
 export const queueMachine = createMachine({
   predictableActionArguments: true,
   initial: "lengthNotSpecified",
@@ -33,7 +35,7 @@ export const queueMachine = createMachine({
               },
               after: [
                 {
-                  delay: (ctx) => remainingTime(ctx).valueOf(),
+                  delay: (ctx) => remainingTime(ctx, new Date()).valueOf(),
                   target: "completed",
                 },
               ],
@@ -56,20 +58,3 @@ export const queueMachine = createMachine({
     queueLength: 0,
   }),
 });
-
-export function endTime({
-  startTime,
-  lastTime,
-  queuersProcessed,
-  queueLength,
-}) {
-  const waitTime = (lastTime - startTime) / queuersProcessed;
-
-  const totalWaitTime = new Date(waitTime * queueLength);
-
-  return new Date(startTime.valueOf() + totalWaitTime.valueOf());
-}
-
-export function remainingTime(args) {
-  return new Date(endTime(args) - Date.now());
-}
