@@ -20,6 +20,6 @@ export function endTime({
   return new Date(startTime.valueOf() + totalWaitTime.valueOf());
 }
 
-export function remainingTime(args: Context, currentTime: Date): Date {
-  return new Date(endTime(args).valueOf() - currentTime.valueOf());
+export function remainingTime(args: Context): Date {
+  return new Date(endTime(args).valueOf() - Date.now());
 }

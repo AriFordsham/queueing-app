@@ -19,24 +19,28 @@ export const queueMachine = createMachine({
       states: {
         neverAdvanced: {
           on: {
-            ADVANCE: { target: "advancedOnce" },
+            ADVANCE: { target: "showEstimate" },
           },
         },
-        advancedOnce: {
+        showEstimate: {
           initial: "running",
           states: {
             running: {
               on: {
-                ADVANCE: {
-                  target: "running",
-                },
-                COUNTED_DOWN: { target: "completed" },
-                EXPIRED: { target: "expiredEarly" },
+                ADVANCE: [
+                  {
+                    target: "running",
+                    cond: (ctx) => ctx.queuersProcessed < ctx.queueLength,
+                  },
+                  {
+                    target: "lastOne",
+                  },
+                ],
               },
               after: [
                 {
                   delay: (ctx) => remainingTime(ctx, new Date()).valueOf(),
-                  target: "completed",
+                  target: "expiredEarly",
                 },
               ],
               entry: assign({
@@ -44,6 +48,7 @@ export const queueMachine = createMachine({
                 queuersProcessed: (ctx) => ctx.queuersProcessed + 1,
               }),
             },
+            lastOne: {},
             expiredEarly: {},
             completed: {},
           },

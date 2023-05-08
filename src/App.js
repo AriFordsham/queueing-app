@@ -14,12 +14,12 @@ export default function App() {
   const [state, send] = useMachine(queueMachine, { devTools: true });
 
   const remainingTime_ = useCallback(
-    () => remainingTime(state.context, new Date()),
+    () => remainingTime(state.context),
     [state.context]
   );
 
   useEffect(() => {
-    if (state.matches("lengthSpecified.advancedOnce.running")) {
+    if (state.matches("lengthSpecified.showEstimate.running")) {
       const tick = setInterval(() => setCurrentTime(new Date()), 1000);
 
       return () => clearInterval(tick);
@@ -69,7 +69,7 @@ export default function App() {
           },
           "Advance"
         ),
-        state.matches("lengthSpecified.advancedOnce") &&
+        state.matches("lengthSpecified.showEstimate") &&
           e(
             Fragment,
             null,
@@ -92,7 +92,7 @@ export default function App() {
                     second: "2-digit",
                   }),
                   expiredEarly: "We might have been a tad optimistic!",
-                }[state.value.lengthSpecified.advancedOnce] ||
+                }[state.value.lengthSpecified.showEstimate] ||
                 console.log(state.value),
             })
           )
