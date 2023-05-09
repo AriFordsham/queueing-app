@@ -2,6 +2,17 @@ import { assign, createMachine } from "xstate";
 
 import { remainingTime } from "./timings.ts";
 
+const resets = { RESET: { target: "lengthNotSpecified" } };
+
+const advancesToIntermediate = {
+  ADVANCE: { target: "intermediateQueuers" },
+};
+
+const expiryDelay = {
+  delay: (ctx) => remainingTime(ctx, new Date()).valueOf(),
+  target: "lengthNotSpecified",
+};
+
 export const queueMachine = createMachine({
   predictableActionArguments: true,
   initial: "lengthNotSpecified",
@@ -12,7 +23,7 @@ export const queueMachine = createMachine({
           target: "firstQueuer",
           actions: assign({ queueLength: (_, e) => e.specifiedLength }),
         },
-        RESET: { target: "lengthNotSpecified" },
+        ...resets,
       },
       entry: assign({
         startTime: () => new Date(),
@@ -21,43 +32,29 @@ export const queueMachine = createMachine({
 
     firstQueuer: {
       on: {
-        ADVANCE: { target: "intermediateQueuers" },
-        RESET: { target: "lengthNotSpecified" },
+        ...advancesToIntermediate,
+        ...resets,
       },
     },
     intermediateQueuers: {
       on: {
-        ADVANCE: {
-          target: "intermediateQueuers",
-        },
-        RESET: { target: "lengthNotSpecified" },
+        ...advancesToIntermediate,
+        ...resets,
       },
-      after: [
-        {
-          delay: (ctx) => remainingTime(ctx, new Date()).valueOf(),
-          target: "lengthNotSpecified",
-        },
-      ],
+      after: [expiryDelay],
 
       entry: assign({
         lastTime: () => new Date(),
         queuersProcessed: (ctx) => ctx.queuersProcessed + 1,
       }),
       always: {
-        target: "lastQueuer",
         cond: (ctx) => ctx.queuersProcessed + 1 >= ctx.queueLength,
+        target: "lastQueuer",
       },
     },
     lastQueuer: {
-      on: {
-        RESET: { target: "lengthNotSpecified" },
-      },
-      after: [
-        {
-          delay: (ctx) => remainingTime(ctx, new Date()).valueOf(),
-          target: "lengthNotSpecified",
-        },
-      ],
+      on: resets,
+      after: [expiryDelay],
     },
   },
   context: () => ({
