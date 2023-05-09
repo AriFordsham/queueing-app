@@ -13,13 +13,17 @@ export default function App() {
 
   const [state, send] = useMachine(queueMachine, { devTools: true });
 
-  const remainingTime_ = useCallback(
-    () => remainingTime(state.context),
+  const remainingTimeFormatted = useCallback(
+    () =>
+      remainingTime(state.context).toLocaleTimeString(undefined, {
+        minute: "2-digit",
+        second: "2-digit",
+      }),
     [state.context]
   );
 
   useEffect(() => {
-    if (state.matches("lengthSpecified.showEstimate.running")) {
+    if (state.matches("intermediateQueuers") || state.matches("lastQueuer")) {
       const tick = setInterval(() => setCurrentTime(new Date()), 1000);
 
       return () => clearInterval(tick);
@@ -28,11 +32,25 @@ export default function App() {
 
   const advance = useCallback(() => send("ADVANCE"), [send]);
 
+  const lengthSpecified = () =>
+    state.matches("firstQueuer") ||
+    state.matches("intermediateQueuers") ||
+    state.matches("lastQueuer");
+
   return e(
     "form",
     { className: "main-form" },
     e("h1", {}, "How Long is This Queue?"),
     e("label", { htmlFor: "startTime" }, "When did you join the queue?"),
+    e(
+      "button",
+      {
+        type: "button",
+        className: "form-control btn btn-danger",
+        onClick: () => send("RESET"),
+      },
+      "RESET"
+    ),
     e("input", {
       readOnly: true,
       id: "startTime",
@@ -45,18 +63,19 @@ export default function App() {
     e(
       "label",
       { htmlFor: "queueLength" },
-      "How many queuers are ahead of you?"
+      "How many queuers are in the queue?"
     ),
     e("input", {
       id: "queueLength",
+      readOnly: lengthSpecified(),
       className: "form-control text-center",
-      value: state.matches("lengthSpecified")
+      value: lengthSpecified()
         ? state.context.queueLength - state.context.queuersProcessed
         : "",
       onChange: (e) =>
         send("SPECIFY_LENGTH", { specifiedLength: e.target.value }),
     }),
-    state.matches("lengthSpecified") &&
+    lengthSpecified() &&
       e(
         Fragment,
         null,
@@ -65,37 +84,36 @@ export default function App() {
           {
             type: "button",
             className: "form-control btn btn-success",
+            disabled: !(
+              state.matches("firstQueuer") ||
+              state.matches("intermediateQueuers")
+            ),
             onClick: advance,
           },
-          "Advance"
+          "ADVANCE"
         ),
-        state.matches("lengthSpecified.showEstimate") &&
-          e(
-            Fragment,
-            null,
-            e("label", { htmlFor: "queuersProcessed" }, "Queuers processed"),
-            e("input", {
-              readOnly: true,
-              id: "queuersProcessed",
-              className: "form-control text-center",
-              value: state.context.queuersProcessed,
-            }),
-            e("label", { htmlFor: "remainingTime" }, "Time remaining"),
-            e("input", {
-              readOnly: true,
-              id: "remainingTime",
-              className: "form-control text-center",
-              value:
-                {
-                  running: remainingTime_().toLocaleTimeString(undefined, {
-                    minute: "2-digit",
-                    second: "2-digit",
-                  }),
-                  expiredEarly: "We might have been a tad optimistic!",
-                }[state.value.lengthSpecified.showEstimate] ||
-                console.log(state.value),
-            })
-          )
+        e(
+          Fragment,
+          null,
+          e("label", { htmlFor: "queuersProcessed" }, "Queuers processed"),
+          e("input", {
+            readOnly: true,
+            id: "queuersProcessed",
+            className: "form-control text-center",
+            value: state.context.queuersProcessed,
+          }),
+          e("label", { htmlFor: "remainingTime" }, "Time remaining"),
+          e("input", {
+            readOnly: true,
+            id: "remainingTime",
+            className: "form-control text-center",
+            value:
+              {
+                intermediateQueuers: remainingTimeFormatted(),
+                lastQueuer: remainingTimeFormatted(),
+              }[state.value] || console.log(state.value),
+          })
+        )
       )
   );
 }

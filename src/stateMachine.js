@@ -9,51 +9,55 @@ export const queueMachine = createMachine({
     lengthNotSpecified: {
       on: {
         SPECIFY_LENGTH: {
-          target: "lengthSpecified",
+          target: "firstQueuer",
           actions: assign({ queueLength: (_, e) => e.specifiedLength }),
         },
+        RESET: { target: "lengthNotSpecified" },
+      },
+      entry: assign({
+        startTime: () => new Date(),
+      }),
+    },
+
+    firstQueuer: {
+      on: {
+        ADVANCE: { target: "intermediateQueuers" },
+        RESET: { target: "lengthNotSpecified" },
       },
     },
-    lengthSpecified: {
-      initial: "neverAdvanced",
-      states: {
-        neverAdvanced: {
-          on: {
-            ADVANCE: { target: "showEstimate" },
-          },
+    intermediateQueuers: {
+      on: {
+        ADVANCE: {
+          target: "intermediateQueuers",
         },
-        showEstimate: {
-          initial: "running",
-          states: {
-            running: {
-              on: {
-                ADVANCE: [
-                  {
-                    target: "running",
-                    cond: (ctx) => ctx.queuersProcessed < ctx.queueLength,
-                  },
-                  {
-                    target: "lastOne",
-                  },
-                ],
-              },
-              after: [
-                {
-                  delay: (ctx) => remainingTime(ctx, new Date()).valueOf(),
-                  target: "expiredEarly",
-                },
-              ],
-              entry: assign({
-                lastTime: () => new Date(),
-                queuersProcessed: (ctx) => ctx.queuersProcessed + 1,
-              }),
-            },
-            lastOne: {},
-            expiredEarly: {},
-            completed: {},
-          },
-        },
+        RESET: { target: "lengthNotSpecified" },
       },
+      after: [
+        {
+          delay: (ctx) => remainingTime(ctx, new Date()).valueOf(),
+          target: "lengthNotSpecified",
+        },
+      ],
+
+      entry: assign({
+        lastTime: () => new Date(),
+        queuersProcessed: (ctx) => ctx.queuersProcessed + 1,
+      }),
+      always: {
+        target: "lastQueuer",
+        cond: (ctx) => ctx.queuersProcessed + 1 >= ctx.queueLength,
+      },
+    },
+    lastQueuer: {
+      on: {
+        RESET: { target: "lengthNotSpecified" },
+      },
+      after: [
+        {
+          delay: (ctx) => remainingTime(ctx, new Date()).valueOf(),
+          target: "lengthNotSpecified",
+        },
+      ],
     },
   },
   context: () => ({

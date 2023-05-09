@@ -26,9 +26,7 @@ test("single tick advances state", () => {
   jest.advanceTimersByTime(1);
   service.send("ADVANCE");
   jest.advanceTimersByTime(0);
-  expect(service.getSnapshot()).toMatchState(
-    "lengthSpecified.showEstimate.completed"
-  );
+  expect(service.getSnapshot()).toMatchState("lengthNotSpecified");
 });
 
 test("incomplete two ticks doesn't advance state", () => {
@@ -37,9 +35,7 @@ test("incomplete two ticks doesn't advance state", () => {
   service.send("SPECIFY_LENGTH", { specifiedLength: 2 });
   jest.advanceTimersByTime(1);
   service.send("ADVANCE");
-  expect(service.getSnapshot()).not.toMatchState(
-    "lengthSpecified.showEstimate.completed"
-  );
+  expect(service.getSnapshot()).not.toMatchState("lengthNotSpecified");
 });
 
 test("two ticks advance state", () => {
@@ -49,9 +45,7 @@ test("two ticks advance state", () => {
   jest.advanceTimersByTime(1);
   service.send("ADVANCE");
   jest.advanceTimersByTime(1);
-  expect(service.getSnapshot()).toMatchState(
-    "lengthSpecified.showEstimate.completed"
-  );
+  expect(service.getSnapshot()).toMatchState("lengthNotSpecified");
 });
 
 test("incomplete two bigger ticks don't advance state", () => {
@@ -61,9 +55,7 @@ test("incomplete two bigger ticks don't advance state", () => {
   jest.advanceTimersByTime(5);
   service.send("ADVANCE");
   jest.advanceTimersByTime(4);
-  expect(service.getSnapshot()).not.toMatchState(
-    "lengthSpecified.showEstimate.completed"
-  );
+  expect(service.getSnapshot()).not.toMatchState("lengthNotSpecified");
 });
 
 test("two bigger ticks advance state", () => {
@@ -73,9 +65,7 @@ test("two bigger ticks advance state", () => {
   jest.advanceTimersByTime(5);
   service.send("ADVANCE");
   jest.advanceTimersByTime(5);
-  expect(service.getSnapshot()).toMatchState(
-    "lengthSpecified.showEstimate.completed"
-  );
+  expect(service.getSnapshot()).toMatchState("lengthNotSpecified");
 });
 
 test("one tick with empty queue gives correct remaining time", () => {
