@@ -1,16 +1,11 @@
 import { assign, createMachine } from "xstate";
 
-import { remainingTime } from "./timings.ts";
+import { avgWait } from "./timings.ts";
 
 const resets = { RESET: { target: "lengthNotSpecified" } };
 
 const advancesToIntermediate = {
   ADVANCE: { target: "intermediateQueuers" },
-};
-
-const expiryDelay = {
-  delay: (ctx) => remainingTime(ctx),
-  target: "lengthNotSpecified",
 };
 
 export const queueMachine = createMachine({
@@ -41,7 +36,6 @@ export const queueMachine = createMachine({
         ...advancesToIntermediate,
         ...resets,
       },
-      after: [expiryDelay],
 
       entry: assign({
         lastTime: () => new Date(),
@@ -52,9 +46,16 @@ export const queueMachine = createMachine({
         target: "lastQueuer",
       },
     },
+
     lastQueuer: {
       on: resets,
-      after: [expiryDelay],
+      after: [
+        {
+          delay: (ctx) =>
+            avgWait(ctx.startTime, ctx.lastTime, ctx.queuersProcessed),
+          target: "lengthNotSpecified",
+        },
+      ],
     },
   },
   context: () => ({

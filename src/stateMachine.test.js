@@ -19,16 +19,6 @@ expect.extend({
 
 jest.useFakeTimers();
 
-test("single tick advances state", () => {
-  const service = interpret(queueMachine);
-  service.start();
-  service.send("SPECIFY_LENGTH", { specifiedLength: 1 });
-  jest.advanceTimersByTime(1);
-  service.send("ADVANCE");
-  jest.advanceTimersByTime(0);
-  expect(service.getSnapshot()).toMatchState("lengthNotSpecified");
-});
-
 test("incomplete two ticks doesn't advance state", () => {
   const service = interpret(queueMachine);
   service.start();

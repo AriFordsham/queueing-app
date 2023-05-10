@@ -9,7 +9,11 @@ function dateDiff(x: Date, y: Date) {
   return x.valueOf() - y.valueOf();
 }
 
-function avgWait(startTime: Date, endTime: Date, queuersProcessed: number) {
+export function avgWait(
+  startTime: Date,
+  endTime: Date,
+  queuersProcessed: number
+) {
   return dateDiff(endTime, startTime) / queuersProcessed;
 }
 
