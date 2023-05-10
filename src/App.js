@@ -15,7 +15,7 @@ export default function App() {
 
   const remainingTimeFormatted = useCallback(
     () =>
-      remainingTime(state.context).toLocaleTimeString(undefined, {
+      new Date(remainingTime(state.context)).toLocaleTimeString(undefined, {
         minute: "2-digit",
         second: "2-digit",
       }),

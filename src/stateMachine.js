@@ -9,7 +9,7 @@ const advancesToIntermediate = {
 };
 
 const expiryDelay = {
-  delay: (ctx) => remainingTime(ctx, new Date()).valueOf(),
+  delay: (ctx) => remainingTime(ctx),
   target: "lengthNotSpecified",
 };
 

@@ -74,7 +74,7 @@ test("one tick with empty queue gives correct remaining time", () => {
   service.send("SPECIFY_LENGTH", { specifiedLength: 1 });
   jest.advanceTimersByTime(1);
   service.send("ADVANCE");
-  expect(remainingTime(service.getSnapshot().context)).toEqual(new Date(0));
+  expect(remainingTime(service.getSnapshot().context)).toEqual(0);
 });
 
 test("bigger tick with empty queue gives correct remaining time", () => {
@@ -83,7 +83,7 @@ test("bigger tick with empty queue gives correct remaining time", () => {
   service.send("SPECIFY_LENGTH", { specifiedLength: 1 });
   jest.advanceTimersByTime(5);
   service.send("ADVANCE");
-  expect(remainingTime(service.getSnapshot().context)).toEqual(new Date(0));
+  expect(remainingTime(service.getSnapshot().context)).toEqual(0);
 });
 
 test("one tick with non-empty queue gives correct remaining time", () => {
@@ -92,7 +92,7 @@ test("one tick with non-empty queue gives correct remaining time", () => {
   service.send("SPECIFY_LENGTH", { specifiedLength: 2 });
   jest.advanceTimersByTime(1);
   service.send("ADVANCE");
-  expect(remainingTime(service.getSnapshot().context)).toEqual(new Date(1));
+  expect(remainingTime(service.getSnapshot().context)).toEqual(1);
 });
 
 test("bigger tick with non-empty queue gives correct remaining time", () => {
@@ -101,7 +101,7 @@ test("bigger tick with non-empty queue gives correct remaining time", () => {
   service.send("SPECIFY_LENGTH", { specifiedLength: 2 });
   jest.advanceTimersByTime(5);
   service.send("ADVANCE");
-  expect(remainingTime(service.getSnapshot().context)).toEqual(new Date(5));
+  expect(remainingTime(service.getSnapshot().context)).toEqual(5);
 });
 
 test("incomplete second tick with non-empty queue gives correct remaining time", () => {
@@ -111,5 +111,5 @@ test("incomplete second tick with non-empty queue gives correct remaining time",
   jest.advanceTimersByTime(5);
   service.send("ADVANCE");
   jest.advanceTimersByTime(4);
-  expect(remainingTime(service.getSnapshot().context)).toEqual(new Date(1));
+  expect(remainingTime(service.getSnapshot().context)).toEqual(1);
 });
