@@ -1,10 +1,19 @@
-import React, { Fragment, useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 import { useMachine } from "@xstate-ninja/react";
 
 import { queueMachine } from "./stateMachine";
 
 import { remainingTime } from "./timings.ts";
+
+const LabelledElement = ({ label, children }) => (
+  <div>
+    <label htmlFor={children.props.id} className="form-label">
+      {label}
+    </label>
+    {children}
+  </div>
+);
 
 export default function App() {
   const [, setCurrentTime] = useState(new Date());
@@ -41,37 +50,42 @@ export default function App() {
   return (
     <form className="main-form">
       <h1>How Long is This Queue?</h1>
-      <label htmlFor="startTime">When did you join the queue?</label>
-      <button
-        type="button"
-        className="form-control btn btn-danger"
-        onClick={() => send("RESET")}
-      >
-        RESET
-      </button>
-      <input
-        readOnly
-        id="startTime"
-        className="form-control text-center"
-        value={state.context.startTime.toLocaleTimeString(undefined, {
-          hour: "2-digit",
-          minute: "2-digit",
-        })}
-      />
-      <label htmlFor="queueLength">How many queuers are in the queue?</label>
-      <input
-        id="queueLength"
-        readOnly={lengthSpecified()}
-        className="form-control text-center"
-        value={
-          lengthSpecified()
-            ? state.context.queueLength - state.context.queuersProcessed
-            : ""
-        }
-        onChange={(e) =>
-          send("SPECIFY_LENGTH", { specifiedLength: e.target.value })
-        }
-      />
+      <LabelledElement label="When did you join the queue?">
+        <div className="input-group">
+          <input
+            readOnly
+            id="startTime"
+            className="form-control text-center"
+            value={state.context.startTime.toLocaleTimeString(undefined, {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          />
+          <button
+            type="button"
+            className="form-control btn btn-danger"
+            onClick={() => send("RESET")}
+          >
+            RESET
+          </button>
+        </div>
+      </LabelledElement>
+
+      <LabelledElement label="How many queuers are in the queue?">
+        <input
+          id="queueLength"
+          readOnly={lengthSpecified()}
+          className="form-control text-center"
+          value={
+            lengthSpecified()
+              ? state.context.queueLength - state.context.queuersProcessed
+              : ""
+          }
+          onChange={(e) =>
+            send("SPECIFY_LENGTH", { specifiedLength: e.target.value })
+          }
+        />
+      </LabelledElement>
       {lengthSpecified() && (
         <>
           <button
@@ -87,21 +101,23 @@ export default function App() {
           >
             ADVANCE
           </button>
-          <label htmlFor="queuersProcessed">Queuers processed</label>
-          <input
-            readOnly
-            id="queuersProcessed"
-            className="form-control text-center"
-            value={state.context.queuersProcessed}
-          />
-          <label htmlFor="remainingTime">Time remaining</label>
-          {queueTail() && (
+          <LabelledElement label="Queuers processed">
             <input
               readOnly
-              id="remainingTime"
+              id="queuersProcessed"
               className="form-control text-center"
-              value={remainingTimeFormatted()}
+              value={state.context.queuersProcessed}
             />
+          </LabelledElement>
+          {queueTail() && (
+            <LabelledElement label="Time remaining">
+              <input
+                readOnly
+                id="remainingTime"
+                className="form-control text-center"
+                value={remainingTimeFormatted()}
+              />
+            </LabelledElement>
           )}
         </>
       )}

@@ -22,6 +22,8 @@ export const queueMachine = createMachine({
       },
       entry: assign({
         startTime: () => new Date(),
+        queuersProcessed: 0,
+        queueLength: 0,
       }),
     },
 
