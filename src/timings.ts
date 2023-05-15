@@ -9,7 +9,7 @@ function dateDiff(x: Date, y: Date) {
   return x.valueOf() - y.valueOf();
 }
 
-function queueLength(queue: Queue) {
+export function queueLength(queue: Queue) {
   return queue.queuersQueued + queue.queuersProcessed;
 }
 

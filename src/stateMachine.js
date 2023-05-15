@@ -4,10 +4,6 @@ import { avgWait } from "./timings.ts";
 
 const resets = { RESET: { target: "lengthNotSpecified" } };
 
-const advancesToIntermediate = {
-  ADVANCE: { target: "intermediateQueuers" },
-};
-
 const specifiesLengthActions = {
   actions: assign({ queuersQueued: (_, e) => e.specifiedLength }),
 };
@@ -26,7 +22,7 @@ export const queueMachine = createMachine({
     lengthNotSpecified: {
       on: {
         SPECIFY_LENGTH: {
-          target: "firstQueuer",
+          target: "lengthSpecified",
           ...specifiesLengthActions,
         },
         ...resets,
@@ -38,37 +34,27 @@ export const queueMachine = createMachine({
       }),
     },
 
-    firstQueuer: {
+    lengthSpecified: {
       on: {
-        ...advancesToIntermediate,
-        ...resets,
-        ...specifiesLengths,
-      },
-    },
-    intermediateQueuers: {
-      on: {
-        ...advancesToIntermediate,
+        ADVANCE: {
+          target: "lengthSpecified",
+          actions: assign({
+            queuersQueued: (ctx) => ctx.queuersQueued - 1,
+            queuersProcessed: (ctx) => ctx.queuersProcessed + 1,
+          }),
+        },
         ...resets,
         ...specifiesLengths,
       },
 
       entry: assign({
         lastTime: () => new Date(),
-        queuersQueued: (ctx) => ctx.queuersQueued - 1,
-        queuersProcessed: (ctx) => ctx.queuersProcessed + 1,
       }),
-      always: {
-        cond: (ctx) => ctx.queuersQueued <= 1,
-        target: "lastQueuer",
-      },
-    },
-
-    lastQueuer: {
-      on: { ...resets },
       after: [
         {
           delay: (ctx) =>
             avgWait(ctx.startTime, ctx.lastTime, ctx.queuersProcessed),
+          cond: (ctx) => ctx.queuersQueued <= 1,
           target: "lengthNotSpecified",
         },
       ],

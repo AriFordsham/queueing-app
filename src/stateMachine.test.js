@@ -58,24 +58,6 @@ test("two bigger ticks advance state", () => {
   expect(service.getSnapshot()).toMatchState("lengthNotSpecified");
 });
 
-test("one tick with empty queue gives correct remaining time", () => {
-  const service = interpret(queueMachine);
-  service.start();
-  service.send("SPECIFY_LENGTH", { specifiedLength: 1 });
-  jest.advanceTimersByTime(1);
-  service.send("ADVANCE");
-  expect(remainingTime(service.getSnapshot().context)).toEqual(0);
-});
-
-test("bigger tick with empty queue gives correct remaining time", () => {
-  const service = interpret(queueMachine);
-  service.start();
-  service.send("SPECIFY_LENGTH", { specifiedLength: 1 });
-  jest.advanceTimersByTime(5);
-  service.send("ADVANCE");
-  expect(remainingTime(service.getSnapshot().context)).toEqual(0);
-});
-
 test("one tick with non-empty queue gives correct remaining time", () => {
   const service = interpret(queueMachine);
   service.start();

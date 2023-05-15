@@ -29,11 +29,8 @@ export default function App() {
     [state.context]
   );
 
-  const queueTail = () =>
-    state.matches("intermediateQueuers") || state.matches("lastQueuer");
-
   useEffect(() => {
-    if (queueTail()) {
+    if (lengthSpecified()) {
       const tick = setInterval(() => setCurrentTime(new Date()), 1000);
 
       return () => clearInterval(tick);
@@ -42,10 +39,7 @@ export default function App() {
 
   const advance = useCallback(() => send("ADVANCE"), [send]);
 
-  const lengthSpecified = () =>
-    state.matches("firstQueuer") ||
-    state.matches("intermediateQueuers") ||
-    state.matches("lastQueuer");
+  const lengthSpecified = () => state.matches("lengthSpecified");
 
   return (
     <form className="main-form">
@@ -88,12 +82,7 @@ export default function App() {
           <button
             type="button"
             className="form-control btn btn-success"
-            disabled={
-              !(
-                state.matches("firstQueuer") ||
-                state.matches("intermediateQueuers")
-              )
-            }
+            disabled={state.context.queuersQueued <= 1}
             onClick={advance}
           >
             ADVANCE
@@ -108,7 +97,7 @@ export default function App() {
               }
             />
           </LabelledElement>
-          {queueTail() && (
+          {lengthSpecified() && (
             <LabelledElement label="Time remaining">
               <input
                 readOnly
