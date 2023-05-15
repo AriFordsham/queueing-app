@@ -9,8 +9,8 @@ test("two ticks", () => {
       {
         startTime: new Date(0),
         lastTime: new Date(5),
+        queuersQueued: 1,
         queuersProcessed: 1,
-        queueLength: 2,
       },
       new Date(5)
     ).valueOf()
@@ -23,8 +23,8 @@ test("three ticks", () => {
       {
         startTime: new Date(0),
         lastTime: new Date(10),
+        queuersQueued: 1,
         queuersProcessed: 2,
-        queueLength: 3,
       },
       new Date(5)
     ).valueOf()
@@ -37,8 +37,8 @@ test("one tick under time", () => {
       {
         startTime: new Date(0),
         lastTime: new Date(4),
+        queuersQueued: 2,
         queuersProcessed: 1,
-        queueLength: 3,
       },
       new Date(7)
     ).valueOf()
@@ -51,8 +51,8 @@ test("one tick over time", () => {
       {
         startTime: new Date(0),
         lastTime: new Date(4),
+        queuersQueued: 2,
         queuersProcessed: 1,
-        queueLength: 3,
       },
       new Date(10)
     ).valueOf()

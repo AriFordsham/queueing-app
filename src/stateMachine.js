@@ -8,6 +8,17 @@ const advancesToIntermediate = {
   ADVANCE: { target: "intermediateQueuers" },
 };
 
+const specifiesLengthActions = {
+  actions: assign({ queuersQueued: (_, e) => e.specifiedLength }),
+};
+
+const specifiesLengths = {
+  SPECIFY_LENGTH: specifiesLengthActions,
+  SPECIFY_PROCESSED: {
+    actions: assign({ queuersProcessed: (_, e) => e.processed }),
+  },
+};
+
 export const queueMachine = createMachine({
   predictableActionArguments: true,
   initial: "lengthNotSpecified",
@@ -16,14 +27,14 @@ export const queueMachine = createMachine({
       on: {
         SPECIFY_LENGTH: {
           target: "firstQueuer",
-          actions: assign({ queueLength: (_, e) => e.specifiedLength }),
+          ...specifiesLengthActions,
         },
         ...resets,
       },
       entry: assign({
         startTime: () => new Date(),
         queuersProcessed: 0,
-        queueLength: 0,
+        queuersQueued: undefined,
       }),
     },
 
@@ -31,26 +42,29 @@ export const queueMachine = createMachine({
       on: {
         ...advancesToIntermediate,
         ...resets,
+        ...specifiesLengths,
       },
     },
     intermediateQueuers: {
       on: {
         ...advancesToIntermediate,
         ...resets,
+        ...specifiesLengths,
       },
 
       entry: assign({
         lastTime: () => new Date(),
+        queuersQueued: (ctx) => ctx.queuersQueued - 1,
         queuersProcessed: (ctx) => ctx.queuersProcessed + 1,
       }),
       always: {
-        cond: (ctx) => ctx.queuersProcessed + 1 >= ctx.queueLength,
+        cond: (ctx) => ctx.queuersQueued <= 1,
         target: "lastQueuer",
       },
     },
 
     lastQueuer: {
-      on: resets,
+      on: { ...resets },
       after: [
         {
           delay: (ctx) =>
@@ -64,6 +78,5 @@ export const queueMachine = createMachine({
     startTime: new Date(),
     lastTime: new Date(),
     queuersProcessed: 0,
-    queueLength: 0,
   }),
 });

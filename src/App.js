@@ -73,17 +73,14 @@ export default function App() {
 
       <LabelledElement label="How many queuers are in the queue?">
         <input
-          id="queueLength"
-          readOnly={lengthSpecified()}
+          id="queuersQueued"
           className="form-control text-center"
-          value={
-            lengthSpecified()
-              ? state.context.queueLength - state.context.queuersProcessed
-              : ""
-          }
-          onChange={(e) =>
-            send("SPECIFY_LENGTH", { specifiedLength: e.target.value })
-          }
+          value={lengthSpecified() ? state.context.queuersQueued : ""}
+          onChange={(e) => {
+            if (e.target.value >= 2) {
+              send("SPECIFY_LENGTH", { specifiedLength: e.target.value });
+            }
+          }}
         />
       </LabelledElement>
       {lengthSpecified() && (
@@ -103,10 +100,12 @@ export default function App() {
           </button>
           <LabelledElement label="Queuers processed">
             <input
-              readOnly
               id="queuersProcessed"
               className="form-control text-center"
               value={state.context.queuersProcessed}
+              onChange={(e) =>
+                send("SPECIFY_PROCESSED", { processed: e.target.value })
+              }
             />
           </LabelledElement>
           {queueTail() && (
