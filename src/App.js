@@ -1,10 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 
-import { useMachine } from "@xstate-ninja/react";
-
-import { queueMachine } from "./stateMachine";
-
-import { remainingTime } from "./timings.ts";
+import { avgWait, remainingTime } from "./timings.ts";
 
 const LabelledElement = ({ label, children }) => (
   <div>
@@ -18,28 +14,52 @@ const LabelledElement = ({ label, children }) => (
 export default function App() {
   const [, setCurrentTime] = useState(new Date());
 
-  const [state, send] = useMachine(queueMachine, { devTools: true });
+  const [startTime, setStartTime] = useState(new Date());
+  const [queue, setQueue] = useState(null);
+
+  const reset = () => {
+    setQueue(null);
+    setStartTime(new Date());
+  };
 
   const remainingTimeFormatted = useCallback(
     () =>
-      new Date(remainingTime(state.context)).toLocaleTimeString(undefined, {
+      new Date(
+        remainingTime({
+          startTime,
+          ...queue,
+        })
+      ).toLocaleTimeString(undefined, {
         minute: "2-digit",
         second: "2-digit",
       }),
-    [state.context]
+    [startTime, queue]
   );
 
   useEffect(() => {
-    if (lengthSpecified()) {
-      const tick = setInterval(() => setCurrentTime(new Date()), 1000);
+    const tick = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
 
-      return () => clearInterval(tick);
+    return () => clearInterval(tick);
+  }, []);
+
+  const advance = useCallback(() => {
+    setQueue((prev) => ({
+      queuersQueued: prev.queuersQueued - 1,
+      queuersProcessed: prev.queuersProcessed + 1,
+      lastTime: new Date(),
+    }));
+
+    if (queue.queuersQueued <= 1) {
+      setInterval(
+        reset,
+        avgWait(startTime, queue.lastTime, queue.queuersProcessed)
+      );
     }
-  }, [state]);
+  }, [startTime, queue]);
 
-  const advance = useCallback(() => send("ADVANCE"), [send]);
-
-  const lengthSpecified = () => state.matches("lengthSpecified");
+  const lengthSpecified = useCallback(() => queue !== null, [queue]);
 
   return (
     <form className="main-form">
@@ -50,7 +70,7 @@ export default function App() {
             readOnly
             id="startTime"
             className="form-control text-center"
-            value={state.context.startTime.toLocaleTimeString(undefined, {
+            value={startTime.toLocaleTimeString(undefined, {
               hour: "2-digit",
               minute: "2-digit",
             })}
@@ -58,21 +78,27 @@ export default function App() {
           <button
             type="button"
             className="form-control btn btn-danger"
-            onClick={() => send("RESET")}
+            onClick={() => {
+              reset();
+            }}
           >
             RESET
           </button>
         </div>
       </LabelledElement>
 
-      <LabelledElement label="How many queuers are in the queue?">
+      <LabelledElement label="How many queuers are in the queue ahead of you?">
         <input
           id="queuersQueued"
           className="form-control text-center"
-          value={lengthSpecified() ? state.context.queuersQueued : ""}
+          value={lengthSpecified() ? queue.queuersQueued : ""}
           onChange={(e) => {
             if (e.target.value >= 2) {
-              send("SPECIFY_LENGTH", { specifiedLength: e.target.value });
+              const q = lengthSpecified()
+                ? queue
+                : { queuersProcessed: 0, lastTime: new Date() };
+
+              setQueue({ ...q, queuersQueued: e.target.value });
             }
           }}
         />
@@ -82,7 +108,7 @@ export default function App() {
           <button
             type="button"
             className="form-control btn btn-success"
-            disabled={state.context.queuersQueued <= 1}
+            disabled={queue.queuersQueued <= 1}
             onClick={advance}
           >
             ADVANCE
@@ -91,13 +117,16 @@ export default function App() {
             <input
               id="queuersProcessed"
               className="form-control text-center"
-              value={state.context.queuersProcessed}
-              onChange={(e) =>
-                send("SPECIFY_PROCESSED", { processed: e.target.value })
-              }
+              value={queue.queuersProcessed}
+              onChange={(e) => {
+                setQueue((prev) => ({
+                  ...prev,
+                  queuersProcessed: e.target.value,
+                }));
+              }}
             />
           </LabelledElement>
-          {lengthSpecified() && (
+          {queue.queuersProcessed >= 1 && (
             <LabelledElement label="Time remaining">
               <input
                 readOnly
