@@ -73,7 +73,7 @@ export default function App() {
           <input
             readOnly
             id="startTime"
-            className="form-control text-center"
+            className="text-center form-control"
             value={queue.startTime.toLocaleTimeString(undefined, {
               hour: "2-digit",
               minute: "2-digit",
@@ -82,7 +82,7 @@ export default function App() {
           />
           <button
             type="button"
-            className="form-control btn btn-danger"
+            className="btn btn-danger input-group-append"
             onClick={reset}
           >
             RESET
