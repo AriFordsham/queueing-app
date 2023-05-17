@@ -1,9 +1,4 @@
-type Queue = {
-  startTime: Date;
-  lastTime: Date;
-  queuersQueued: number;
-  queuersProcessed: number;
-};
+import { Queue } from "./queueType";
 
 function dateDiff(x: Date, y: Date) {
   return x.valueOf() - y.valueOf();

@@ -1,8 +1,16 @@
 import React, { useCallback, useEffect, useState } from "react";
 
 import { avgWait, remainingTime } from "./timings.ts";
+import { Queue, UninitializedQueue } from "./queueType.ts";
+import { advanceQueue, setQueueLength, setQueuersProcessed } from "./queue.ts";
+import { t } from "xstate";
 
-const LabelledElement = ({ label, children }) => (
+interface LabelledElementProps {
+  label: string;
+  children: React.ReactElement;
+}
+
+const LabelledElement = ({ label, children }: LabelledElementProps) => (
   <div>
     <label htmlFor={children.props.id} className="form-label">
       {label}
@@ -14,26 +22,23 @@ const LabelledElement = ({ label, children }) => (
 export default function App() {
   const [, setCurrentTime] = useState(new Date());
 
-  const [startTime, setStartTime] = useState(new Date());
-  const [queue, setQueue] = useState(null);
+  const [queue, setQueue] = useState<Queue | UninitializedQueue>(
+    new UninitializedQueue()
+  );
 
-  const reset = () => {
-    setQueue(null);
-    setStartTime(new Date());
-  };
+  function reset() {
+    setQueue(new UninitializedQueue());
+  }
 
   const remainingTimeFormatted = useCallback(
     () =>
-      new Date(
-        remainingTime({
-          startTime,
-          ...queue,
-        })
-      ).toLocaleTimeString(undefined, {
-        minute: "2-digit",
-        second: "2-digit",
-      }),
-    [startTime, queue]
+      queue instanceof Queue
+        ? new Date(remainingTime(queue)).toLocaleTimeString(undefined, {
+            minute: "2-digit",
+            second: "2-digit",
+          })
+        : "",
+    [queue]
   );
 
   useEffect(() => {
@@ -44,22 +49,21 @@ export default function App() {
     return () => clearInterval(tick);
   }, []);
 
-  const advance = useCallback(() => {
-    setQueue((prev) => ({
-      queuersQueued: prev.queuersQueued - 1,
-      queuersProcessed: prev.queuersProcessed + 1,
-      lastTime: new Date(),
-    }));
+  const advance = () => {
+    const newQueue = advanceQueue(queue as Queue);
+    setQueue(newQueue);
 
-    if (queue.queuersQueued <= 1) {
-      setInterval(
+    if (newQueue.queuersQueued <= 1) {
+      setTimeout(
         reset,
-        avgWait(startTime, queue.lastTime, queue.queuersProcessed)
+        avgWait(
+          newQueue.startTime,
+          newQueue.lastTime,
+          newQueue.queuersProcessed
+        )
       );
     }
-  }, [startTime, queue]);
-
-  const lengthSpecified = useCallback(() => queue !== null, [queue]);
+  };
 
   return (
     <form className="main-form">
@@ -70,17 +74,16 @@ export default function App() {
             readOnly
             id="startTime"
             className="form-control text-center"
-            value={startTime.toLocaleTimeString(undefined, {
+            value={queue.startTime.toLocaleTimeString(undefined, {
               hour: "2-digit",
               minute: "2-digit",
+              second: "2-digit",
             })}
           />
           <button
             type="button"
             className="form-control btn btn-danger"
-            onClick={() => {
-              reset();
-            }}
+            onClick={reset}
           >
             RESET
           </button>
@@ -91,19 +94,15 @@ export default function App() {
         <input
           id="queuersQueued"
           className="form-control text-center"
-          value={lengthSpecified() ? queue.queuersQueued : ""}
+          value={queue instanceof Queue ? queue.queuersQueued : ""}
           onChange={(e) => {
-            if (e.target.value >= 2) {
-              const q = lengthSpecified()
-                ? queue
-                : { queuersProcessed: 0, lastTime: new Date() };
-
-              setQueue({ ...q, queuersQueued: e.target.value });
+            if (+e.target.value >= 2) {
+              setQueue((prev) => setQueueLength(prev, +e.target.value));
             }
           }}
         />
       </LabelledElement>
-      {lengthSpecified() && (
+      {queue instanceof Queue && (
         <>
           <button
             type="button"
@@ -119,10 +118,9 @@ export default function App() {
               className="form-control text-center"
               value={queue.queuersProcessed}
               onChange={(e) => {
-                setQueue((prev) => ({
-                  ...prev,
-                  queuersProcessed: e.target.value,
-                }));
+                setQueue((prev) =>
+                  setQueuersProcessed(prev as Queue, +e.target.value)
+                );
               }}
             />
           </LabelledElement>
