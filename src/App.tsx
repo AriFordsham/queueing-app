@@ -3,7 +3,6 @@ import React, { useCallback, useEffect, useState } from "react";
 import { avgWait, remainingTime } from "./timings.ts";
 import { Queue, UninitializedQueue } from "./queueType.ts";
 import { advanceQueue, setQueueLength, setQueuersProcessed } from "./queue.ts";
-import { t } from "xstate";
 
 interface LabelledElementProps {
   label: string;
@@ -72,8 +71,8 @@ export default function App() {
   return (
     <form className="main-form">
       <div className="vstack gap-3">
-        <h1>How Long is This Queue?</h1>
-        <LabelledElement label="When did you join the queue?">
+        <h1>How Long Will I Wait?</h1>
+        <LabelledElement label="You joined this line at">
           <div className="input-group input-group-lg">
             <span id="startTime" className="text-center form-control">
               {queue.startTime.toLocaleTimeString(undefined, {
@@ -92,7 +91,7 @@ export default function App() {
           </div>
         </LabelledElement>
 
-        <LabelledElement label="How many queuers are in the queue ahead of you?">
+        <LabelledElement label="How many people are in line ahead of you?">
           <input
             id="queuersQueued"
             className="form-control form-control-lg text-center"
@@ -106,15 +105,20 @@ export default function App() {
         </LabelledElement>
         {queue instanceof Queue && (
           <>
-            <button
-              type="button"
-              className="form-control btn btn-lg btn-success"
-              disabled={queue.queuersQueued <= 1}
-              onClick={advance}
-            >
-              ADVANCE
-            </button>
-            <LabelledElement label="Queuers processed">
+            <div>
+              <button
+                type="button"
+                className="form-control btn btn-lg btn-success"
+                disabled={queue.queuersQueued <= 1}
+                onClick={advance}
+              >
+                ADVANCE
+              </button>
+              <span>
+                Press this every time the line moves forward one place.
+              </span>
+            </div>
+            <LabelledElement label="Number of people who have left the line">
               <input
                 id="queuersProcessed"
                 className="form-control form-control-lg text-center"
@@ -128,10 +132,11 @@ export default function App() {
             </LabelledElement>
             {queue.queuersProcessed >= 1 && (
               <>
-                <LabelledElement label="Time remaining">
+                <LabelledElement label="You'll wait around">
                   <span
                     id="remainingTime"
                     className="form-control form-control-lg text-center"
+                    style={{ fontSize: "2rem" }}
                   >
                     {remainingTimeFormatted()}
                   </span>
@@ -144,7 +149,7 @@ export default function App() {
                   </a>{" "}
                   - <a href="https://linkedin.com/in/ari-fordsham">LinkedIn</a>{" "}
                   - <a href="https://github.com/AriFordsham">GitHub</a> -{" "}
-                  <a href="mailto:ariordsham@gmail.com">Email</a>
+                  <a href="mailto:arifordsham@gmail.com">Email</a>
                 </span>
               </>
             )}
