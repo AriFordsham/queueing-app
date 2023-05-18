@@ -112,43 +112,51 @@ export default function App() {
                 disabled={queue.queuersQueued <= 1}
                 onClick={advance}
               >
-                ADVANCE
+                LINE MOVED!
               </button>
               <span>
                 Press this every time the line moves forward one place.
               </span>
             </div>
-            <LabelledElement label="Number of people who have left the line">
-              <input
-                id="queuersProcessed"
-                className="form-control form-control-lg text-center"
-                value={queue.queuersProcessed}
-                onChange={(e) => {
-                  setQueue((prev) =>
-                    setQueuersProcessed(prev as Queue, +e.target.value)
-                  );
-                }}
-              />
-            </LabelledElement>
             {queue.queuersProcessed >= 1 && (
               <>
-                <LabelledElement label="You'll wait around">
-                  <span
-                    id="remainingTime"
-                    className="form-control form-control-lg text-center"
-                    style={{ fontSize: "2rem" }}
-                  >
-                    {remainingTimeFormatted()}
-                  </span>
-                </LabelledElement>
+                <span style={{ fontSize: "1.25rem" }}>
+                  Based on the average wait time of the
+                  <input
+                    id="queuersProcessed"
+                    value={queue.queuersProcessed}
+                    className="form-control text-center"
+                    style={{
+                      width: "2rem",
+                      display: "inline",
+                      padding: 0,
+                      fontSize: "1.25rem",
+                    }}
+                    onChange={(e) => {
+                      setQueue((prev) =>
+                        setQueuersProcessed(prev as Queue, +e.target.value)
+                      );
+                    }}
+                  />
+                  &nbsp; people before you, you'll wait approximately&nbsp;
+                </span>
+                <span
+                  id="remainingTime"
+                  className="form-control form-control-lg text-center"
+                  style={{ fontSize: "2rem" }}
+                >
+                  {remainingTimeFormatted()}
+                </span>
                 <span>
                   I'm Ari Fordsham and I'm open to work.
                   <br />
                   <a href="https://docs.google.com/document/d/1D5AmLMLdUqQLu-gS6RribCi7HEeYYfLtP6RvtEHgKPg/edit?ouid=102776542320394462102&usp=docs_home&ths=true">
                     CV
-                  </a>{" "}
-                  - <a href="https://linkedin.com/in/ari-fordsham">LinkedIn</a>{" "}
-                  - <a href="https://github.com/AriFordsham">GitHub</a> -{" "}
+                  </a>
+                  &nbsp; -&nbsp;
+                  <a href="https://linkedin.com/in/ari-fordsham">LinkedIn</a>
+                  &nbsp; - <a href="https://github.com/AriFordsham">GitHub</a>
+                  &nbsp; -&nbsp;
                   <a href="mailto:arifordsham@gmail.com">Email</a>
                 </span>
               </>
