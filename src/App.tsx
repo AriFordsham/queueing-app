@@ -127,14 +127,26 @@ export default function App() {
               />
             </LabelledElement>
             {queue.queuersProcessed >= 1 && (
-              <LabelledElement label="Time remaining">
-                <span
-                  id="remainingTime"
-                  className="form-control form-control-lg text-center"
-                >
-                  {remainingTimeFormatted()}
+              <>
+                <LabelledElement label="Time remaining">
+                  <span
+                    id="remainingTime"
+                    className="form-control form-control-lg text-center"
+                  >
+                    {remainingTimeFormatted()}
+                  </span>
+                </LabelledElement>
+                <span>
+                  I'm Ari Fordsham and I'm open to work.
+                  <br />
+                  <a href="https://docs.google.com/document/d/1D5AmLMLdUqQLu-gS6RribCi7HEeYYfLtP6RvtEHgKPg/edit?ouid=102776542320394462102&usp=docs_home&ths=true">
+                    CV
+                  </a>{" "}
+                  - <a href="https://linkedin.com/in/ari-fordsham">LinkedIn</a>{" "}
+                  - <a href="https://github.com/AriFordsham">GitHub</a> -{" "}
+                  <a href="mailto:ariordsham@gmail.com">Email</a>
                 </span>
-              </LabelledElement>
+              </>
             )}
           </>
         )}
