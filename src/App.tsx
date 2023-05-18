@@ -12,7 +12,11 @@ interface LabelledElementProps {
 
 const LabelledElement = ({ label, children }: LabelledElementProps) => (
   <div>
-    <label htmlFor={children.props.id} className="form-label">
+    <label
+      htmlFor={children.props.id}
+      className="form-label form-label-lg"
+      style={{ fontSize: "1.25rem" }}
+    >
       {label}
     </label>
     {children}
@@ -67,75 +71,74 @@ export default function App() {
 
   return (
     <form className="main-form">
-      <h1>How Long is This Queue?</h1>
-      <LabelledElement label="When did you join the queue?">
-        <div className="input-group">
-          <input
-            readOnly
-            id="startTime"
-            className="text-center form-control"
-            value={queue.startTime.toLocaleTimeString(undefined, {
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit",
-            })}
-          />
-          <button
-            type="button"
-            className="btn btn-danger input-group-append"
-            onClick={reset}
-          >
-            RESET
-          </button>
-        </div>
-      </LabelledElement>
+      <div className="vstack gap-3">
+        <h1>How Long is This Queue?</h1>
+        <LabelledElement label="When did you join the queue?">
+          <div className="input-group input-group-lg">
+            <span id="startTime" className="text-center form-control">
+              {queue.startTime.toLocaleTimeString(undefined, {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+              })}
+            </span>
+            <button
+              type="button"
+              className="btn btn-lg btn-danger input-group-append"
+              onClick={reset}
+            >
+              RESET
+            </button>
+          </div>
+        </LabelledElement>
 
-      <LabelledElement label="How many queuers are in the queue ahead of you?">
-        <input
-          id="queuersQueued"
-          className="form-control text-center"
-          value={queue instanceof Queue ? queue.queuersQueued : ""}
-          onChange={(e) => {
-            if (+e.target.value >= 2) {
-              setQueue((prev) => setQueueLength(prev, +e.target.value));
-            }
-          }}
-        />
-      </LabelledElement>
-      {queue instanceof Queue && (
-        <>
-          <button
-            type="button"
-            className="form-control btn btn-success"
-            disabled={queue.queuersQueued <= 1}
-            onClick={advance}
-          >
-            ADVANCE
-          </button>
-          <LabelledElement label="Queuers processed">
-            <input
-              id="queuersProcessed"
-              className="form-control text-center"
-              value={queue.queuersProcessed}
-              onChange={(e) => {
-                setQueue((prev) =>
-                  setQueuersProcessed(prev as Queue, +e.target.value)
-                );
-              }}
-            />
-          </LabelledElement>
-          {queue.queuersProcessed >= 1 && (
-            <LabelledElement label="Time remaining">
+        <LabelledElement label="How many queuers are in the queue ahead of you?">
+          <input
+            id="queuersQueued"
+            className="form-control form-control-lg text-center"
+            value={queue instanceof Queue ? queue.queuersQueued : ""}
+            onChange={(e) => {
+              if (+e.target.value >= 2) {
+                setQueue((prev) => setQueueLength(prev, +e.target.value));
+              }
+            }}
+          />
+        </LabelledElement>
+        {queue instanceof Queue && (
+          <>
+            <button
+              type="button"
+              className="form-control btn btn-lg btn-success"
+              disabled={queue.queuersQueued <= 1}
+              onClick={advance}
+            >
+              ADVANCE
+            </button>
+            <LabelledElement label="Queuers processed">
               <input
-                readOnly
-                id="remainingTime"
-                className="form-control text-center"
-                value={remainingTimeFormatted()}
+                id="queuersProcessed"
+                className="form-control form-control-lg text-center"
+                value={queue.queuersProcessed}
+                onChange={(e) => {
+                  setQueue((prev) =>
+                    setQueuersProcessed(prev as Queue, +e.target.value)
+                  );
+                }}
               />
             </LabelledElement>
-          )}
-        </>
-      )}
+            {queue.queuersProcessed >= 1 && (
+              <LabelledElement label="Time remaining">
+                <span
+                  id="remainingTime"
+                  className="form-control form-control-lg text-center"
+                >
+                  {remainingTimeFormatted()}
+                </span>
+              </LabelledElement>
+            )}
+          </>
+        )}
+      </div>
     </form>
   );
 }
