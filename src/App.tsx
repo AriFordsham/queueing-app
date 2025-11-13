@@ -100,8 +100,11 @@ export default function App() {
             value={queue instanceof Queue ? String(queue.queuersQueued) : ""}
             onChange={(e) => {
               const val = e.target.value;
-              // allow the user to clear the field temporarily without updating state
-              if (val === "") return;
+              // if the user clears the field, reset to uninitialized
+              if (val === "") {
+                reset();
+                return;
+              }
 
               const n = +val;
               // accept 1 and above
