@@ -13,7 +13,7 @@ const LabelledElement = ({ label, children }: LabelledElementProps) => (
   <div>
     <label
       htmlFor={children.props.id}
-      className="form-label form-label-lg"
+      className='form-label form-label-lg'
       style={{ fontSize: "1.25rem" }}
     >
       {label}
@@ -69,12 +69,12 @@ export default function App() {
   };
 
   return (
-    <form className="main-form">
-      <div className="vstack gap-3">
+    <form className='main-form'>
+      <div className='vstack gap-3'>
         <h1>How Long Will I Wait?</h1>
-        <LabelledElement label="You joined this line at">
-          <div className="input-group input-group-lg">
-            <span id="startTime" className="text-center form-control">
+        <LabelledElement label='You joined this line at'>
+          <div className='input-group input-group-lg'>
+            <span id='startTime' className='text-center form-control'>
               {queue.startTime.toLocaleTimeString(undefined, {
                 hour: "2-digit",
                 minute: "2-digit",
@@ -82,8 +82,8 @@ export default function App() {
               })}
             </span>
             <button
-              type="button"
-              className="btn btn-lg btn-danger input-group-append"
+              type='button'
+              className='btn btn-lg btn-danger input-group-append'
               onClick={reset}
             >
               RESET
@@ -91,14 +91,25 @@ export default function App() {
           </div>
         </LabelledElement>
 
-        <LabelledElement label="How many people are in line ahead of you?">
+        <LabelledElement label='How many people are in line ahead of you?'>
           <input
-            id="queuersQueued"
-            className="form-control form-control-lg text-center"
-            value={queue instanceof Queue ? queue.queuersQueued : ""}
+            id='queuersQueued'
+            type='number'
+            min={1}
+            className='form-control form-control-lg text-center'
+            value={queue instanceof Queue ? String(queue.queuersQueued) : ""}
             onChange={(e) => {
-              if (+e.target.value >= 2) {
-                setQueue((prev) => setQueueLength(prev, +e.target.value));
+              const val = e.target.value;
+              // if the user clears the field, reset to uninitialized
+              if (val === "") {
+                reset();
+                return;
+              }
+
+              const n = +val;
+              // accept 1 and above
+              if (n >= 1) {
+                setQueue((prev) => setQueueLength(prev, n));
               }
             }}
           />
@@ -107,8 +118,8 @@ export default function App() {
           <>
             <div>
               <button
-                type="button"
-                className="form-control btn btn-lg btn-success"
+                type='button'
+                className='form-control btn btn-lg btn-success'
                 disabled={queue.queuersQueued <= 1}
                 onClick={advance}
               >
@@ -123,9 +134,9 @@ export default function App() {
                 <span style={{ fontSize: "1.25rem" }}>
                   Based on the average wait time of the
                   <input
-                    id="queuersProcessed"
+                    id='queuersProcessed'
                     value={queue.queuersProcessed}
-                    className="form-control text-center"
+                    className='form-control text-center'
                     style={{
                       width: "2rem",
                       display: "inline",
@@ -141,8 +152,8 @@ export default function App() {
                   &nbsp; people before you, you'll wait approximately&nbsp;
                 </span>
                 <span
-                  id="remainingTime"
-                  className="form-control form-control-lg text-center"
+                  id='remainingTime'
+                  className='form-control form-control-lg text-center'
                   style={{ fontSize: "2rem" }}
                 >
                   {remainingTimeFormatted()}
@@ -150,14 +161,14 @@ export default function App() {
                 <span>
                   I'm Ari Fordsham and I'm open to work.
                   <br />
-                  <a href="https://docs.google.com/document/d/1D5AmLMLdUqQLu-gS6RribCi7HEeYYfLtP6RvtEHgKPg/edit?ouid=102776542320394462102&usp=docs_home&ths=true">
+                  <a href='https://docs.google.com/document/d/1D5AmLMLdUqQLu-gS6RribCi7HEeYYfLtP6RvtEHgKPg/edit?ouid=102776542320394462102&usp=docs_home&ths=true'>
                     CV
                   </a>
                   &nbsp; -&nbsp;
-                  <a href="https://linkedin.com/in/ari-fordsham">LinkedIn</a>
-                  &nbsp; - <a href="https://github.com/AriFordsham">GitHub</a>
+                  <a href='https://linkedin.com/in/ari-fordsham'>LinkedIn</a>
+                  &nbsp; - <a href='https://github.com/AriFordsham'>GitHub</a>
                   &nbsp; -&nbsp;
-                  <a href="mailto:arifordsham@gmail.com">Email</a>
+                  <a href='mailto:arifordsham@gmail.com'>Email</a>
                 </span>
               </>
             )}
